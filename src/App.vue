@@ -1,6 +1,6 @@
 <template>
   <div class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
-    <h1 class="text-2xl font-bold text-center mb-4">Navidrome 音乐播放器</h1>
+    <h1 class="text-2xl font-bold text-center mb-4">贤米音乐</h1>
     <div v-if="loading" class="text-gray-500">加载歌曲列表...</div>
     <div v-else>
       <ul class="space-y-2">
@@ -10,6 +10,9 @@
       </ul>
       <audio ref="audioRef" controls style="width: 100%; margin-top: 20px;"></audio>
     </div>
+    <button v-if="!hasUserInteracted" @click="handleUserInteraction" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      点击开始播放
+    </button>
   </div>
 </template>
 
@@ -23,6 +26,7 @@ const NAVIDROME_API_KEY = 'your-api-key';
 const loading = ref(true);
 const songs = ref([]);
 const audioRef = ref(null);
+const hasUserInteracted = ref(false);
 
 const fetchSongs = async () => {
   try {
@@ -32,8 +36,10 @@ const fetchSongs = async () => {
       }
     });
     const data = await response.json();
-    songs.value = data.subsonic-response.randomSongs.song;
+    songs.value = data['subsonic-response'].randomSongs.song;
     loading.value = false;
+   
+
   } catch (error) {
     console.error('获取歌曲列表时出错:', error);
     loading.value = false;
@@ -44,6 +50,13 @@ const playSong = (song) => {
   const songUrl = `${NAVIDROME_BASE_URL}/rest/stream.view?id=${song.id}&u=zjx&p=Zjx123&f=json&v=1.16.1&c=your-client-name`;
   audioRef.value.src = songUrl;
   audioRef.value.play();
+};
+
+const handleUserInteraction = () => {
+  hasUserInteracted.value = true;
+  if (songs.value.length > 0) {
+    playSong(songs.value[0]);
+  }
 };
 
 onMounted(() => {
